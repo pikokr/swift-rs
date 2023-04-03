@@ -223,7 +223,7 @@ impl SwiftLinker {
         let configuration = if debug { "debug" } else { "release" };
         let rust_target = RustTarget::from_env();
 
-        let arch = match rust_target.arch {
+        let arch = match rust_target.arch.as_str() {
             "aarch64" => "arm64",
             arch => arch,
         };
