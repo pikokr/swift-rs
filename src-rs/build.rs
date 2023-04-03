@@ -223,6 +223,11 @@ impl SwiftLinker {
         let configuration = if debug { "debug" } else { "release" };
         let rust_target = RustTarget::from_env();
 
+        let arch = match rust_target.arch {
+            "aarch64" => "arm64",
+            arch => arch,
+        };
+
         link_clang_rt(&rust_target);
 
         for package in self.packages {
@@ -234,7 +239,7 @@ impl SwiftLinker {
 
             let mut command = Command::new("swift");
             command
-                .args(["build", "-c", configuration])
+                .args(["build", "-c", configuration, "--arch", arch])
                 .current_dir(&package.path)
                 .args(["--scratch-path", &out_path.display().to_string()]);
 
@@ -273,13 +278,7 @@ impl SwiftLinker {
 
             let search_path = out_path
                 // swift build uses this output folder no matter what is the target
-                .join(format!(
-                    "{}-apple-macosx",
-                    match std::env::consts::ARCH {
-                        "aarch64" => "arm64",
-                        arch => arch,
-                    }
-                ))
+                .join(format!("{}-apple-macosx", arch))
                 .join(configuration);
 
             println!("cargo:rerun-if-changed={}", package_path.display());
